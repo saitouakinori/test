@@ -18,8 +18,8 @@
 
       function init() {
         // サイズを指定
-        const width = 800;
-        const height = 600;
+        const width = 940;
+        const height = 1200;
 
         const canvasElement = document.querySelector("#myCanvas");
         // レンダラーを作成
@@ -46,8 +46,12 @@
         // 平行光源を作成
         const directionalLight = new THREE.DirectionalLight(0xffffff);
         directionalLight.position.set(1, 1, 1);
-        //scene.add(directionalLight);
+        scene.add(directionalLight);
 
+        // 平行光源を作成
+        const light = new THREE.AmbientLight(0xFFFFFF, 1.0);
+        scene.add(light);
+        
         // マテリアルを作成
         const material = new THREE.MeshStandardMaterial({
           map: new THREE.TextureLoader().load("images/map.jpg"),
