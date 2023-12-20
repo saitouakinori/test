@@ -48,8 +48,8 @@
         directionalLight.position.set(1, 1, 1);
         scene.add(directionalLight);
 
-        // 平行光源を作成
-        const light = new THREE.AmbientLight(0xFFFFFF, 1.0);
+        // 環境光源を作成
+        const light = new THREE.AmbientLight(0x777777, 1.0);
         scene.add(light);
         
         // マテリアルを作成
