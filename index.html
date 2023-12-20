@@ -1,42 +1,89 @@
-<!doctype html>
-<html>
-    <head>
-	<title> Dagik Moon AR </title>
-        <meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-        <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-	<script src="https://unpkg.com/aframe-orbit-controls@1.2.0/dist/aframe-orbit-controls.min.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
-    </head>
-    <body style="margin: 0; overflow: hidden;">
-        <a-scene
-            embedded
-            loading-screen="enabled: false;"
-            arjs="sourceType: webcam; debugUIEnabled: false;"
-		vr-mode-ui='enabled: false' 
-        >
-        	<a-entity camera look-controls orbit-controls="maxPolarAngle:180; minDistance: 0.5; maxDistance: 200; initialPosition: 0 0 10; autoRotate: true enableKeys: false"></a-entity>
-		<a-assets>
-		        <img id="map" src="images/map.jpg" crossorigin="anonymous" />
-			<img id="logo" src="images/logo.png" crossorigin="anonymous" />
-			<img id="mission" src="images/MISSION2.png" crossorigin="anonymous" />
-		</a-assets>
-	        <a-sphere
-		        radius = "80."
-		        position = "0 0. -500"
-		        material = "src: #map;"
-			gps-entity-place="latitude: 35.; longitude: 135.;"
-			animation = "
-				property :rotation;
-				dur : 30000;
-				from : 0 0 0;
-				to : 0 180 0;
-				loop : 1;
-				easing : linear;
-			"
-	        ></a-sphere>
-            <a-camera gps-new-camera="simulateLatitude:35; simulateLongitude:135; gpsTimeInterval:36000;" rotation-reader ></a-camera>
-        </a-scene>
-    </body>
-</html>
+// ページの読み込みを待つ
+window.addEventListener('load', init);
+
+function init() {
+
+  // サイズを指定
+  const width = 960;
+  const height = 540;
+  let rot = 0;
+
+  // レンダラーを作成
+  const renderer = new THREE.WebGLRenderer({
+    canvas: document.querySelector('#myCanvas')
+  });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(width, height);
+
+  // シーンを作成
+  const scene = new THREE.Scene();
+
+  // カメラを作成
+  const camera = new THREE.PerspectiveCamera(45, width / height);
+
+  // ジオメトリを作成（球体）
+  const geometry = new THREE.SphereGeometry(300, 30, 30);
+  // 画像を読み込む
+  const loader = new THREE.TextureLoader();
+  const texture = loader.load('images/map.jpg');
+  // マテリアルを作成
+  const material = new THREE.MeshStandardMaterial({map: texture});
+  //メッシュを作成
+  const mesh = new THREE.Mesh(geometry, material);
+  //シーンにメッシュを適用
+  scene.add(mesh);
+
+  // 平行光源
+  const directionalLight = new THREE.DirectionalLight(0xFFFFFF);
+  directionalLight.position.set(1, 1, 1);
+  // シーンに追加
+  scene.add(directionalLight);
+
+
+  // 星屑を作成 (カメラの動きをわかりやすくするため)
+  createStarField();
+
+  function createStarField() {
+    // 形状データを作成
+    const geometry = new THREE.Geometry();
+    for (let i = 0; i < 1000; i++) {
+      geometry.vertices.push(
+        new THREE.Vector3(
+          3000 * (Math.random() - 0.5),
+          3000 * (Math.random() - 0.5),
+          3000 * (Math.random() - 0.5)
+        )
+      );
+    }
+    // マテリアルを作成
+    const material = new THREE.PointsMaterial({
+      size: 10,
+      color: 0xffffff
+    });
+
+    // 物体を作成
+    const mesh = new THREE.Points(geometry, material);
+    scene.add(mesh);
+  }
+
+  tick();
+
+  // 毎フレーム時に実行されるループイベントです
+  function tick() {
+
+    rot += 0.5; // 毎フレーム角度を0.5度ずつ足していく
+
+    // ラジアンに変換する
+    const radian = (rot * Math.PI) / 180;
+    // 角度に応じてカメラの位置を設定
+    camera.position.x = 1000 * Math.sin(radian);
+    camera.position.z = 1000 * Math.cos(radian);
+    // 原点方向を見つめる
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    // レンダリング
+    renderer.render(scene, camera);    
+    requestAnimationFrame(tick);
+  }
+}
+
